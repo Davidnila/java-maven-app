@@ -1,34 +1,37 @@
 pipeline {
     agent any
 
+    environment {
+        BRANCH_NAME = env.GIT_BRANCH ?: 'main' // Default ke 'main' jika GIT_BRANCH tidak ada
+    }
+
     stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
         stage('Test') {
             steps {
                 script {
-                    echo "Testing the application..."
-                    echo "Executing pipeline for branch ${BRANCH_NAME}" 
+                    echo "Testing aplikasi di branch ${BRANCH_NAME}..."
                 }
             }
         }
 
         stage('Build') {
-            when {
-                expression { BRANCH_NAME == 'main' } 
-            }
             steps {
                 script {
-                    echo "Building the application..."
+                    echo "Build aplikasi..."
                 }
             }
         }
 
         stage('Deploy') {
-            when {
-                expression { BRANCH_NAME == 'main' }
-            }
             steps {
                 script {
-                    echo "Deploying the application..."
+                    echo "Deploy aplikasi..."
                 }
             }
         }
