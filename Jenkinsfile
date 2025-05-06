@@ -1,29 +1,30 @@
 pipeline {
     agent any
 
-    environment {
-        BRANCH_NAME = env.GIT_BRANCH ?: 'main' // Default ke 'main' jika GIT_BRANCH tidak ada
+    tools {
+        maven 'maven-3.9'
     }
 
     stages {
-        stage('Checkout') {
+        stage('Build jar') {
             steps {
-                checkout scm
+                sh 'mvn package'
             }
         }
 
-        stage('Test') {
+        stage('Build Image') {
             steps {
                 script {
-                    echo "Testing aplikasi di branch ${BRANCH_NAME}..."
-                }
-            }
-        }
-
-        stage('Build') {
-            steps {
-                script {
-                    echo "Build aplikasi..."
+                    echo "Building the Docker image..."
+                    withCredentials([usernamePassword(
+                        credentialsId: 'docker-hub-repo', 
+                        passwordVariable: 'PASS', 
+                        usernameVariable: 'USER')]) {
+                        
+                        sh 'docker build -t azeshion21/demo-app:jma-2.0 .'
+                        sh "echo \$PASS | docker login -u \$USER --password-stdin"
+                        sh 'docker push azeshion21/demo-app:jma-2.0'
+                    }
                 }
             }
         }
@@ -31,7 +32,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    echo "Deploy aplikasi..."
+                    echo "Deploying the application..."
                 }
             }
         }
